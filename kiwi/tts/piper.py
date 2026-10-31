@@ -21,7 +21,7 @@ class PiperTTS:
 
     def __init__(self, model_path: str = None, cache_dir: str = None):
         if model_path is None:
-            model_path = os.path.join(PROJECT_ROOT, 'piper-models', 'ru_RU-irina-medium.onnx')
+            model_path = os.path.join(PROJECT_ROOT, 'piper-models', 'pl_PL-gosia-medium.onnx')
 
         kiwi_log('PIPER', f'Loading model: {model_path}')
         start = time.time()

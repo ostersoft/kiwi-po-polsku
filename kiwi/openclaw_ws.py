@@ -44,7 +44,7 @@ class OpenClawWebSocket:
     - Fallback to CLI when WebSocket is unavailable
     """
 
-    PROTOCOL_VERSION = 3
+    PROTOCOL_VERSION = 4
 
     # Valid client.id values (enum)
     VALID_CLIENT_IDS = {
@@ -251,7 +251,7 @@ class OpenClawWebSocket:
         identity = self._device_identity
         signed_at_ms = int(time.time() * 1000)
 
-        scopes_str = ",".join(["operator.admin", "approvals"])
+        scopes_str = ",".join(["operator.admin", "operator.approvals"])
         payload_parts = [
             "v2",
             identity["deviceId"],
@@ -1346,13 +1346,13 @@ class OpenClawWebSocket:
                 "mode": "backend"
             },
             "role": "operator",
-            "scopes": ["operator.admin", "approvals"],
+            "scopes": ["operator.admin", "operator.approvals"],
             "caps": [],
             "auth": {
                 "token": self._gateway_token
             },
             "device": self._build_device_auth(nonce),
-            "locale": "ru-RU",
+            "locale": "pl-PL",
             "userAgent": "kiwi-voice/1.0"
         }
 

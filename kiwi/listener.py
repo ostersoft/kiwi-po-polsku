@@ -325,7 +325,7 @@ class StreamingTranscriber:
                 # Optimized parameters for speed > accuracy (partial transcribe)
                 segments, info = self.model.transcribe(
                     audio,
-                    language="ru",
+                    language="pl",
                     task="transcribe",
                     beam_size=1,           # Faster than 5
                     best_of=1,             # Faster than 5
@@ -576,7 +576,8 @@ class KiwiListener:
         
         # === SPEAKER IDENTIFICATION (Phase 1: echo cancellation) ===
         self.speaker_id: Optional[SpeakerIdentifier] = None
-        if SPEAKER_ID_AVAILABLE:
+        #Manually disabling Kiwi voice
+        if False:
             try:
                 self.speaker_id = SpeakerIdentifier()
                 kiwi_log("SPEAKER", "Speaker identification initialized")
@@ -1200,7 +1201,7 @@ class KiwiListener:
             else:
                 segments, _info = self.model.transcribe(
                     audio,
-                    language="ru",
+                    language="pl",
                     task="transcribe",
                     beam_size=1,
                     best_of=1,
@@ -2576,7 +2577,7 @@ class KiwiListener:
 
             segments, info = self.model.transcribe(
                 audio,
-                language="ru",
+                language="pl",
                 task="transcribe",
                 beam_size=5,
                 best_of=5,

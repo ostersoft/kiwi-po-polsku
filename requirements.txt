@@ -51,3 +51,6 @@ openwakeword>=0.6.0
 # Uncomment on macOS with Apple Silicon:
 # lightning-whisper-mlx>=0.4.0
 piper-tts>=1.4.0
+
+#
+sherpa-onnx>=2.0.1

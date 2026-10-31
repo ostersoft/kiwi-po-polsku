@@ -46,7 +46,7 @@ class KiwiConfig:
     openclaw_timeout: int = 120
 
     # Language / i18n — controls UI strings, STT locale, TTS locale
-    language: str = "ru"
+    language: str = "pl"
 
     # Voice system prompt - set on first connection (populated from i18n if empty)
     voice_system_prompt: str = ""
@@ -675,7 +675,7 @@ class KiwiConfig:
         tts_device_label = None
         if self.tts_provider == "piper":
             tts_type = "Piper (local)"
-            tts_model = self.tts_piper_model_path or "ru_RU-irina-medium.onnx"
+            tts_model = self.tts_piper_model_path or "pl_PL-gosia-medium.onnx"
             tts_voice = self.tts_voice
         elif self.tts_provider == "kokoro":
             tts_type = "Kokoro ONNX (local)"

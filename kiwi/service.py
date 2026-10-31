@@ -660,7 +660,7 @@ def main():
         log_func("KIWI", t("responses.service_started"))
         log_func("KIWI", "="*50)
         log_func("KIWI", t("responses.instruction"))
-        log_func("KIWI", "Ctrl+C для остановки\n")
+        log_func("KIWI", "Ctrl+C Naciśnij aby zatrzymać\n")
 
         # Watchdog loop - check if daemon threads are alive and state timeouts
         while True:

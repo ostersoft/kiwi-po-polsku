@@ -118,37 +118,52 @@ class SpeakerIdentifier:
             kiwi_log("SPEAKER-ID", f"Error saving profiles: {e}", level="ERROR")
     
     def _ensure_model_loaded(self):
-        """Load model on first call (lazy loading)."""
+        """Load ONNX speaker embedding model on first call (lazy loading)."""
         if self._model_loaded:
             return
-        
-        if not PYANNOTE_AVAILABLE:
-            kiwi_log("SPEAKER-ID", "pyannote not available, using fallback", level="WARNING")
-            self._model_loaded = True
-            return
-        
+
         try:
-            kiwi_log("SPEAKER-ID", "Loading embedding model (first use)...")
+            kiwi_log("SPEAKER-ID", "Loading ONNX embedding model (first use)...")
+            import numpy as np
+            import sherpa_onnx
             from kiwi import PROJECT_ROOT
-            local_model_path = Path(PROJECT_ROOT) / "models" / "pyannote-embedding"
-            if local_model_path.exists():
-                self.embedding_model = PretrainedSpeakerEmbedding(
-                    str(local_model_path),
-                    device=self.device
-                )
-                kiwi_log("SPEAKER-ID", f"Loaded embedding model from local path on {self.device}")
-            else:
-                kiwi_log("SPEAKER-ID", f"Local model not found at {local_model_path}, trying HuggingFace...", level="WARNING")
-                self.embedding_model = PretrainedSpeakerEmbedding(
-                    "pyannote/embedding",
-                    device=self.device
-                )
-                kiwi_log("SPEAKER-ID", f"Loaded embedding model from HuggingFace on {self.device}")
-            self._model_loaded = True
+
+            model_path = Path(PROJECT_ROOT) / "models" / "speaker" / "wespeaker_en_voxceleb_resnet34.onnx"
+            if not model_path.exists():
+                raise FileNotFoundError(f"ONNX model not found: {model_path}")
+
+            class SherpaEmbeddingModel:
+                """Zamiennik PretrainedSpeakerEmbedding: model(waveforms) -> np.ndarray (batch, dim)."""
+
+                def __init__(self, path: str, sample_rate: int = 16000):
+                    cfg = sherpa_onnx.SpeakerEmbeddingExtractorConfig(
+                        model=path, num_threads=1, debug=False, provider="cpu"
+                    )
+                    self.extractor = sherpa_onnx.SpeakerEmbeddingExtractor(cfg)
+                    self.sample_rate = sample_rate
+
+                def __call__(self, waveforms):
+                    arr = waveforms.detach().cpu().numpy() if hasattr(waveforms, "detach") else np.asarray(waveforms)
+                    arr = np.asarray(arr, dtype=np.float32)
+                    if arr.ndim == 1:
+                        arr = arr[None, None, :]
+                    elif arr.ndim == 2:
+                        arr = arr[:, None, :]
+                    out = []
+                    for w in arr[:, 0, :]:
+                        stream = self.extractor.create_stream()
+                        stream.accept_waveform(sample_rate=self.sample_rate, waveform=w)
+                        stream.input_finished()
+                        emb = np.array(self.extractor.compute(stream), dtype=np.float32)
+                        out.append(emb / (np.linalg.norm(emb) + 1e-9))
+                    return np.stack(out)
+
+            self.embedding_model = SherpaEmbeddingModel(str(model_path))
+            kiwi_log("SPEAKER-ID", f"Loaded ONNX embedding model from {model_path}")
         except Exception as e:
             kiwi_log("SPEAKER-ID", f"Failed to load embedding model: {e}", level="ERROR")
             self.embedding_model = None
-            self._model_loaded = True
+        self._model_loaded = True
     
     def extract_embedding(self, audio: np.ndarray, sample_rate: int = 16000) -> Optional[np.ndarray]:
         """
